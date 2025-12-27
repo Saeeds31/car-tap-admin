@@ -17,9 +17,9 @@ import VueFileAgent from "@boindil/vue-file-agent-next";
 import Vue3PersianDatetimePicker from "vue3-persian-datetime-picker";
 import "@boindil/vue-file-agent-next/dist/vue-file-agent-next.css"; // برای استایل‌ها
 // local=http://127.0.0.1:8000
-// porduction=https://api.security-tap.ir
-axios.defaults.baseURL = "http://127.0.0.1:8000/api/v1/admin";
-window.baseImageAddress = "http://127.0.0.1:8000/public/uploads/";
+// porduction=https://api.car-tap.ir
+axios.defaults.baseURL = "https://api.car-tap.ir/api/v1/admin";
+window.baseImageAddress = "https://api.car-tap.ir/public/uploads/";
 const app = createApp(App);
 // app.use(CKEditor)
 app.use(Vue3Toastify, {

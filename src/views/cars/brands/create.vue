@@ -27,7 +27,18 @@
                         <b-form-group label="توضیح ">
                             <b-form-textarea v-model="form.description" :state="!errors.description" rows="2" />
                             <b-form-invalid-feedback v-if="errors.description">{{ errors.description[0]
-                            }}</b-form-invalid-feedback>
+                                }}</b-form-invalid-feedback>
+                        </b-form-group>
+                    </b-col>
+
+                    <b-col cols="12" md="6">
+                        <b-form-group label="نمایش ماشین ها در صفحه اصلی" label-for="show_in_home">
+                            <b-form-checkbox id="show_in_home" v-model="form.show_in_home"
+                                :state="errors.show_in_home ? false : null" :true-value="1" :false-value="0">
+                                فعال
+
+                            </b-form-checkbox>
+                            <small v-if="errors.show_in_home" class="text-danger">{{ errors.show_in_home[0] }}</small>
                         </b-form-group>
                     </b-col>
                 </b-row>
@@ -54,6 +65,7 @@ const checkPermission = store.checkPermission;
 const form = reactive({
     title: '',
     description: '',
+    show_in_home: '',
     image: '',
 })
 const errors = reactive({})
@@ -67,7 +79,8 @@ const submitForm = async () => {
     try {
         const formData = new FormData()
         for (const key in form) {
-            formData.append(key, form[key] ?? '')
+            if (key == 'show_in_home') formData.append(key, Number(form[key]))
+            else formData.append(key, form[key] ?? '')
         }
         await axios.post('/brands', formData);
         router.push("/cars/brands/list");

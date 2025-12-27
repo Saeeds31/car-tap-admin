@@ -2,11 +2,9 @@
     <b-container fluid class="py-4">
         <b-row>
             <!-- سفارش‌ها -->
-            <b-col cols="12" md="6" lg="6" class="mb-4">
+            <!-- <b-col cols="12" md="6" lg="6" class="mb-4">
                 <b-card class="h-100 shadow-sm">
                     <h5 class="mb-3">📦 اطلاعات کلی دوره ها</h5>
-
-                    <!-- آمار عددی جمع‌وجور -->
                     <b-row class="mb-3 text-center g-2">
                         <b-col cols="6" md="3" class="dashboardItem" v-for="(value, key) in dashboard.course"
                             :key="key">
@@ -18,14 +16,11 @@
                             }}</strong>
                         </b-col>
                     </b-row>
-
-                    <!-- نمودار وضعیت سفارش -->
-                    <!-- <ApexChart type="bar" height="150" :options="orderChartOptions" :series="orderSeries" /> -->
                 </b-card>
-            </b-col>
+            </b-col> -->
 
             <!-- محصولات -->
-            <b-col cols="12" md="6" lg="6" class="mb-4">
+            <!-- <b-col cols="12" md="6" lg="6" class="mb-4">
                 <b-card class="h-100 shadow-sm">
                     <h5 class="mb-3">🛒 فروش دوره ها</h5>
 
@@ -40,11 +35,8 @@
                                 Number(value).toLocaleString() }}</strong>
                         </b-col>
                     </b-row>
-
-                    <!-- نمودار محصولات -->
-                    <!-- <ApexChart type="pie" height="150" :options="productChartOptions" :series="productSeries" /> -->
                 </b-card>
-            </b-col>
+            </b-col> -->
 
             <!-- کاربران -->
             <b-col cols="12" md="12" lg="12" class="mb-4">
@@ -64,9 +56,6 @@
                                 Number(dashboard?.users?.today_registered).toLocaleString() }}</strong>
                         </b-col>
                     </b-row>
-
-                    <!-- نمودار کاربران -->
-                    <!-- <ApexChart type="donut" height="150" :options="userChartOptions" :series="userSeries" /> -->
                 </b-card>
             </b-col>
 

@@ -41,7 +41,6 @@
         <select v-model="form.location" class="form-select">
           <option value="">انتخاب کنید</option>
           <option value="home">صفحه اصلی</option>
-          <option value="login">صفحه عضویت</option>
         </select>
       </div>
 
