@@ -125,11 +125,23 @@ const menuItems = [
       { name: "لیست", link: "/sales-plan/list", permissions: ['salesplan_view'], icon: "bi-list" },
     ],
   },
+
+  {
+    name: "درخواست های خودرو",
+    permissions: ['carrequest_view'],
+    icon: "bi-arrow-left-right",
+    children: [
+      { name: "لیست", link: "/car-requests", permissions: ['carrequest_view'], icon: "bi-list" },
+    ],
+  },
   {
     name: "گزارشات",
     permissions: ['report_users'],
     icon: "bi-graph-up",
     children: [
+      { name: "کاربران", link: "/reports/users", permissions: ['report_users'], icon: "bi-people" },
+      { name: "پیش فروش", link: "/reports/car-request", permissions: ['report_sales'], icon: "bi-bag-fill" },
+      { name: "خودروها", link: "/reports/cars", permissions: ['report_car'], icon: "bi-car-front" },
     ],
   },
   {

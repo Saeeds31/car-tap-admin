@@ -126,11 +126,7 @@ const submitForm = async () => {
         await axios.post(`/sales-plan`, formData)
         toast.success('طرح با موفقیت ذخیره شد ✅')
     } catch (err) {
-        if (err.response && err.response.status === 422) {
-            toast.error('لطفاً خطاهای فرم را بررسی کنید ❌')
-        } else {
-            toast.error('خطا در ارسال اطلاعات ❌')
-        }
+        toast.error(err.response.data.message)
     } finally {
         loading.value = false;
     }

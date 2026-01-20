@@ -1,44 +1,6 @@
 <template>
     <b-container fluid class="py-4">
         <b-row>
-            <!-- سفارش‌ها -->
-            <!-- <b-col cols="12" md="6" lg="6" class="mb-4">
-                <b-card class="h-100 shadow-sm">
-                    <h5 class="mb-3">📦 اطلاعات کلی دوره ها</h5>
-                    <b-row class="mb-3 text-center g-2">
-                        <b-col cols="6" md="3" class="dashboardItem" v-for="(value, key) in dashboard.course"
-                            :key="key">
-                            <div class="small text-muted">{{ courseLabel[key]
-                                }}</div>
-                            <strong>{{
-                                isNaN(value) ? value :
-                                    Number(value).toLocaleString()
-                            }}</strong>
-                        </b-col>
-                    </b-row>
-                </b-card>
-            </b-col> -->
-
-            <!-- محصولات -->
-            <!-- <b-col cols="12" md="6" lg="6" class="mb-4">
-                <b-card class="h-100 shadow-sm">
-                    <h5 class="mb-3">🛒 فروش دوره ها</h5>
-
-                    <b-row class="mb-3 text-center">
-                        <b-col cols="6" md="3" class="dashboardItem" v-for="(value, key) in dashboard.course_order"
-                            :key="key">
-                            <div class="small text-muted">{{
-                                course_order_label[key]
-
-                            }}</div>
-                            <strong>{{ isNaN(value) ? value :
-                                Number(value).toLocaleString() }}</strong>
-                        </b-col>
-                    </b-row>
-                </b-card>
-            </b-col> -->
-
-            <!-- کاربران -->
             <b-col cols="12" md="12" lg="12" class="mb-4">
                 <b-card class="h-100 shadow-sm">
                     <h5 class="mb-3">👤 کاربران</h5>
@@ -58,8 +20,106 @@
                     </b-row>
                 </b-card>
             </b-col>
+        </b-row>
+        <b-row>
+
+            <b-col cols="12" md="12" lg="12" class="mb-4">
+                <b-card class="h-100 shadow-sm">
+                    <h5 class="mb-3">
+                        <i class="bi bi-arrow-left-right"></i>
+                        <span>درخواست های خودرو</span>
+                    </h5>
+
+                    <b-row v-if="dashboard.car_request" class="mb-3 text-center">
+
+                        <b-col cols="6" md="3" class="dashboardItem">
+                            <div class="small text-muted">تعداد کل درخواست ها</div>
+                            <strong>{{ Number(dashboard?.car_request?.total_requests).toLocaleString('fa')
+                            }}</strong>
+                        </b-col>
+                        <b-col cols="6" md="3" class="dashboardItem">
+                            <div class="small text-muted">تعداد درخواست های طرح فعلی</div>
+                            <strong>{{
+                                Number(dashboard?.car_request?.requests_in_active_sale_plans).toLocaleString('fa')
+                            }}</strong>
+                        </b-col>
+
+                        <b-col cols="6" md="3" class="dashboardItem">
+                            <div class="small text-muted">میانگین قیمت طرح فعلی</div>
+                            <strong>{{
+                                Number(Math.floor(dashboard?.car_request?.average_price_in_active_sale_plans)).toLocaleString('fa')
+                            }}</strong>
+                        </b-col>
+                    </b-row>
+                </b-card>
+            </b-col>
 
 
+        </b-row>
+        <b-row>
+            <b-col cols="12" md="12" lg="12" class="mb-4">
+                <b-card class="h-100 shadow-sm">
+                    <h5 class="mb-3">
+                        <i class="bi bi-bag-fill"></i>
+                        <span>طرح های فروش</span>
+                    </h5>
+                    <b-row v-if="dashboard.sales_plan" class="mb-3 text-center">
+                        <b-col cols="6" md="3" class="dashboardItem">
+                            <div class="small text-muted">تعداد کل طرح ها</div>
+                            <strong>{{ Number(dashboard?.sales_plan?.total_sale_plans).toLocaleString('fa')
+                            }}</strong>
+                        </b-col>
+                        <b-col cols="6" md="3" class="dashboardItem">
+                            <div class="small text-muted">تعداد طرح های فعلی</div>
+                            <strong>{{
+                                Number(dashboard?.sales_plan?.active_sale_plans).toLocaleString('fa')
+                            }}</strong>
+                        </b-col>
+                        <b-col cols="6" md="3" class="dashboardItem">
+                            <div class="small text-muted">ماشین های حاضر در طرح فعلی</div>
+                            <strong>{{
+                                Number(dashboard?.sales_plan?.cars_in_active_sale_plans).toLocaleString('fa')
+                            }}</strong>
+                        </b-col>
+                    </b-row>
+                </b-card>
+            </b-col>
+        </b-row>
+
+        <b-row>
+            <b-col cols="12" md="12" lg="12" class="mb-4">
+                <b-card class="h-100 shadow-sm">
+                    <h5 class="mb-3">
+                        <i class="bi bi-car-front"></i>
+                        <span>خودرو ها</span>
+                    </h5>
+                    <b-row v-if="dashboard.cars" class="mb-3 text-center">
+                        <b-col cols="6" md="3" class="dashboardItem">
+                            <div class="small text-muted">تعداد کل ماشین ها</div>
+                            <strong>{{ Number(dashboard?.cars?.total_cars).toLocaleString('fa')
+                            }}</strong>
+                        </b-col>
+                        <b-col cols="6" md="3" class="dashboardItem">
+                            <div class="small text-muted">بیشترین قیمت</div>
+                            <strong>{{
+                                Number(dashboard?.cars?.max_price).toLocaleString('fa')
+                            }}</strong>
+                        </b-col>
+                        <b-col cols="6" md="3" class="dashboardItem">
+                            <div class="small text-muted">کمترین قیمت</div>
+                            <strong>{{
+                                Number(dashboard?.cars?.min_price).toLocaleString('fa')
+                            }}</strong>
+                        </b-col>
+                        <b-col cols="6" md="3" class="dashboardItem">
+                            <div class="small text-muted">میانگین قیمت ماشین ها</div>
+                            <strong>{{
+                                Number(dashboard?.cars?.average_price).toLocaleString('fa')
+                            }}</strong>
+                        </b-col>
+                    </b-row>
+                </b-card>
+            </b-col>
         </b-row>
     </b-container>
 </template>
@@ -121,7 +181,7 @@ const commentChartOptions = ref({ chart: { id: "comments" }, xaxis: { categories
 // دریافت داده از API
 onMounted(async () => {
     // axios.get("/startprojects/permission");  
-    // axios.get("/startprojects/permission/super-admin");
+    // axios.get("/startprojects/permission/super-admin"); 
     const { data } = await axios.get("/dashboard");
     dashboard.value = data.data;
 

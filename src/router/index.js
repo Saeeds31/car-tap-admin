@@ -324,6 +324,28 @@ const routes = [
     component: () => import("@/views/location/City/edit.vue"),
   },
 
+  {
+    path: "/reports/users",
+    name: "reports-users",
+    component: () => import("@/views/reports/users.vue"),
+  },
+
+  {
+    path: "/reports/car-request",
+    name: "reports-car-request",
+    component: () => import("@/views/reports/carRequest.vue"),
+  },
+
+  {
+    path: "/car-requests",
+    name: "car-requests-list",
+    component: () => import("@/views/carRequests/list.vue"),
+  },
+  {
+    path: "/reports/cars",
+    name: "reports-cars",
+    component: () => import("@/views/reports/cars.vue"),
+  },
   { path: "/:pathMatch(.*)*", redirect: "/dashboard" },
 ];
 const router = createRouter({
