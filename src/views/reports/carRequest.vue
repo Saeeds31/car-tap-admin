@@ -64,6 +64,12 @@
                         {{ data.item.user?.full_name }}
                     </span>
                 </template>
+                
+                <template #cell(mobile)="data">
+                    <span>
+                        {{ data.item.user?.mobile }}
+                    </span>
+                </template>
                 <template #cell(car)="data">
                     <span>
                         {{ data.item.car?.name }}
@@ -137,6 +143,8 @@ const loadCars = async (searchQuery) => {
 const fields = [
     { key: "id", label: "شناسه" },
     { key: "user", label: "نام متقاضی" },
+    { key: "mobile", label: "موبایل متقاضی" },
+    
     { key: "car", label: "نام ماشین" },
     { key: "salePlan", label: "طرح فروش" },
     { key: "status", label: "وضعیت" },
