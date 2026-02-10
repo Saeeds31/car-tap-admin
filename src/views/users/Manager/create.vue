@@ -60,7 +60,7 @@ const fetchRoles = async () => {
 const loadUsers = async (searchQuery) => {
     console.log(searchQuery);
     try {
-        const { data } = await axios.get('/users?search=' + searchQuery ?? '')
+        const { data } = await axios.get('/users?full_name=' + searchQuery ?? '')
         const ops = data.data.map(u => ({ id: u.id, label: `${u.full_name} (${u.mobile})` }))
         options.value = ops
     } catch (e) {
