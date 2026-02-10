@@ -64,10 +64,10 @@
                         {{ data.item.user?.full_name }}
                     </span>
                 </template>
-                
+
                 <template #cell(mobile)="data">
                     <span>
-                        {{ data.item.user?.mobile }}
+                        {{ data.item.user ? data.item.user.mobile : "" }}
                     </span>
                 </template>
                 <template #cell(car)="data">
@@ -93,21 +93,20 @@
                         }}
                     </span>
                 </template>
-
             </b-table>
-
-            <b-pagination v-model="page" :total-rows="carsRequest.total" :per-page="carsRequest.per_page" align="center"
-                class="mt-3" @change="fetchData" />
+            <b-pagination v-model="carsRequest.current_page" :total-rows="carsRequest.total"
+                :per-page="carsRequest.per_page" align="center" class="mt-3" @Update:modelValue="changePage" />
         </b-card>
     </b-container>
 </template>
-
 <script setup>
 import { ref, reactive, onMounted } from "vue";
 import axios from "axios";
-
+import { useRouter, useRoute } from "vue-router"
 import Treeselect from 'vue3-treeselect'
 import 'vue3-treeselect/dist/vue3-treeselect.css'
+const route = useRoute();
+const router = useRouter();
 const carsRequest = ref({ data: [] });
 const loading = ref(false);
 const page = ref(1);
@@ -121,6 +120,11 @@ const filters = reactive({
     end_date: "",
     status: "",
 });
+function changePage(p) {
+    router.replace({ name: route.name, query: { page: p } })
+    page.value = p;
+    fetchData();
+}
 const statuses = ref([
     { id: "", label: "همه" },
     { id: "pending", label: 'در حال بررسی' },
@@ -144,7 +148,7 @@ const fields = [
     { key: "id", label: "شناسه" },
     { key: "user", label: "نام متقاضی" },
     { key: "mobile", label: "موبایل متقاضی" },
-    
+
     { key: "car", label: "نام ماشین" },
     { key: "salePlan", label: "طرح فروش" },
     { key: "status", label: "وضعیت" },
@@ -158,6 +162,7 @@ const fetchData = async () => {
             params: { ...filters, page: page.value },
         });
         carsRequest.value = data;
+
     } finally {
         loading.value = false;
     }
@@ -169,6 +174,7 @@ async function fetchInit() {
 
 }
 onMounted(() => {
+    page.value = route.query.page ?? 1;
     fetchData();
     fetchInit()
 });

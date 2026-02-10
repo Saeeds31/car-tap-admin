@@ -55,6 +55,12 @@
                         {{ data.item.user ? data.item.user.full_name : data.item.user.mobile }}
                     </span>
                 </template>
+                
+                <template #cell(mobile)="data">
+                    <span>
+                        {{ data.item.user ? data.item.user.mobile :"-" }}
+                    </span>
+                </template>
                 <template #cell(car)="data">
                     <span>
                         {{ data.item.car?.name }}
@@ -79,12 +85,14 @@
                     </span>
                 </template>
                 <template #cell(handler)="data">
+                 <div class="d-flex flex-column gap-2">
                     <button class="btn btn-primary" @click="changeStatus(data.item)">
                         تغییر وضعیت
                     </button>
                     <button class="mx-3 btn btn-info" @click="changeCar(data.item)">
                         تغییر خودرو
                     </button>
+                 </div>
 
                 </template>
             </b-table>
@@ -228,6 +236,7 @@ const statuses = ref([
 const fields = [
     { key: "id", label: "شناسه" },
     { key: "user", label: "نام متقاضی" },
+    { key: "mobile", label: "شماره تماس" },
     { key: "car", label: "نام ماشین" },
     { key: "salePlan", label: "طرح فروش" },
     { key: "status", label: "وضعیت" },
