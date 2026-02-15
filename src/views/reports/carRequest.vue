@@ -52,7 +52,9 @@
                     </b-col>
 
                 </b-row>
-                <b-button type="submit" variant="primary">اعمال فیلتر</b-button>
+                <b-button type="submit" variant="primary" :disabled="loading">اعمال فیلتر</b-button>
+                <b-button type="button" :disabled="loading" class="mx-3" @click="getExcel()" variant="success">خروجی
+                    اکسل</b-button>
             </b-form>
         </b-card>
 
@@ -167,6 +169,33 @@ const fetchData = async () => {
         loading.value = false;
     }
 };
+
+const getExcel = async () => {
+    loading.value = true;
+    try {
+        const response = await axios.get('reports/car-request/excel', {
+            headers: {
+                Accept: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            },
+            params: {...filters},
+            responseType: "blob",
+            onDownloadProgress: (progressEvent) => {
+                let percentCompleted = Math.round(
+                    (progressEvent.loaded * 100) / progressEvent.total
+                );
+            },
+        });
+        const url = window.URL.createObjectURL(new Blob([response.data]));
+        const link = document.createElement("a");
+        link.href = url;
+        link.setAttribute("download", "output.xlsx");
+        document.body.appendChild(link);
+        link.click();
+    } finally {
+        loading.value = false;
+    }
+};
+
 let saleplanes = ref([]);
 async function fetchInit() {
     const response = await axios.get("/sales-plan");
