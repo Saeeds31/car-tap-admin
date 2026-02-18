@@ -30,6 +30,10 @@
                         <input type="checkbox" class="form-check-input" v-model="setting.value" />
                         <label class="form-check-label">فعال</label>
                     </div>
+                    <b-col v-else-if="setting.type === 'file'" cols="12" md="12">
+                        <VueFileAgent @select="fileloaded($event, setting.key)" ref="kos" :maxFiles="1"
+                            accept=".pdf,.jpg,.png" theme="grid" deletable sortable />
+                    </b-col>
 
                     <!-- پیشفرض -->
                     <input v-else type="text" class="form-control" v-model="setting.value" />
@@ -37,7 +41,7 @@
 
                 <!-- دکمه ذخیره -->
                 <div class="text-end">
-                    <button class="btn btn-primary" type="submit">
+                    <button class="btn btn-primary" :disabled="loader" type="submit">
                         ذخیره تنظیمات
                     </button>
                 </div>
@@ -70,6 +74,18 @@ const loading = ref(false);
 watch(() => selectedGroup.value, () => {
     fetchSettings();
 });
+function changeFile(e) {
+
+
+}
+function fileloaded(files, key) {
+    if (key && files[0] && files[0].file) {
+        let findedIndex = settings.value.findIndex((set) => set.key == key)
+        if (findedIndex) {
+            settings.value[findedIndex].value = files[0].file
+        }
+    }
+}
 const fetchGroups = async () => {
     try {
         const { data } = await axios.get("/settings-groups");
@@ -91,14 +107,29 @@ const fetchSettings = async () => {
         loading.value = false;
     }
 };
-
+let loader = ref(false);
 const saveSettings = async () => {
     try {
-        await axios.post("/settings-save-group/" + selectedGroup.value, { settings: settings.value });
+        loader.value = true;
+        const fd = new FormData();
+        settings.value.forEach((sett, index) => {
+            if (sett.id) {
+                fd.append(`settings[${index}][id]`, sett.id)
+            }
+            fd.append(`settings[${index}][key]`, sett.key)
+            fd.append(`settings[${index}][value]`, sett.value)
+            fd.append(`settings[${index}][type]`, sett.type)
+            fd.append(`settings[${index}][group]`, sett.group)
+        });
+
+        await axios.post("/settings-save-group/" + selectedGroup.value, fd);
         toast.success('تنظیمات با موفقیت ذخیره شد ✅')
     } catch (err) {
         console.log(err);
         toast.success('مشکلی در ذخیره پیش آمد ✅')
+    } finally {
+        loader.value = false;
+
     }
 };
 
