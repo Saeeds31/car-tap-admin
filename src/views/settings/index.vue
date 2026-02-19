@@ -27,7 +27,7 @@
                         v-model="setting.value" />
                     <!-- boolean -->
                     <div v-else-if="setting.type === 'boolean'" class="form-check">
-                        <input type="checkbox" class="form-check-input" v-model="setting.value" />
+                        <input type="checkbox" class="form-check-input" v-momaindel="setting.value" />
                         <label class="form-check-label">فعال</label>
                     </div>
                     <b-col v-else-if="setting.type === 'file'" cols="12" md="12">
