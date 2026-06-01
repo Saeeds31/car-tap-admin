@@ -45,9 +45,9 @@
                             <tr>
                                 <th>شناسه</th>
                                 <th>کاربر</th>
-                                <th>مبلغ (تومان)</th>
-                                <th>تصویر</th>
-                                <th>وضعیت</th>
+                                <th>درخواست خودرو</th>
+                                <th>مبلغ خودرو(دلار)</th>
+                                <th>جمع مبلغ تایید شده (تومان)</th>
                                 <th>عملیات</th>
                             </tr>
                         </thead>
@@ -55,20 +55,36 @@
                             <tr v-for="receipt in receipts.data" :key="receipt.id">
                                 <td>{{ receipt.id }}</td>
                                 <td>{{ receipt.user?.full_name ?? '-' }}</td>
-                                <td>{{ Number(receipt.amount).toLocaleString() }}</td>
-                                <td><img width="48px" style="cursor: pointer;" @click="showOrginalImage(receipt.image)"
-                                        :src="getReceiptimage(receipt.image)" alt=""></td>
-                                <td>{{ getStatusLabel(receipt.status) }}</td>
+                                <td>{{ receipt.car?.name ?? '-' }}</td>
+                                <td>{{ receipt.car?.name ?? '-' }}</td>
+                                
+                                <td>{{ Number(receipt.request?.price).toLocaleString("fa") }}</td>
+                                <td>{{ getAcceptedTotal(receipt) }}</td>
                                 <td>
-                                    <button v-if="receipt.status == 'pending'" class="btn btn-sm btn-success me-2"
-                                        @click="acceptReceipt(receipt)">
-                                        تایید
-                                    </button>
-                                    <button v-if="receipt.status == 'pending'" class="btn btn-sm btn-warning"
-                                        @click="rejecteReceipt(receipt)">
-                                        رد
-                                    </button>
+                                    <div class="receipts">
+                                        <div v-for="value in receipt.receipts" :key="value.id">
+                                            <img width="100" style="cursor: pointer;"
+                                                @click="showOrginalImage(value.image)"
+                                                :src="getReceiptimage(value.image)" alt="">
+                                            <span
+                                                :class="{ 'yellow': value.status == 'pending', 'red': value.status == 'rejected', 'green': value.status == 'accepted' }">{{
+                                                    getStatusLabel(value.status) }}</span>
+                                            <div class="buttons">
+                                                <button v-if="value.status == 'pending'"
+                                                    class="btn btn-sm  btn-success me-2"
+                                                    @click="acceptReceipt(receipt)">
+                                                    تایید
+                                                </button>
+                                                <button v-if="value.status == 'pending'" class="btn btn-sm btn-warning"
+                                                    @click="rejecteReceipt(receipt)">
+                                                    رد
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
                                 </td>
+
+
                             </tr>
                         </tbody>
                     </table>
@@ -154,6 +170,15 @@ function getStatusLabel(status) {
 function showOrginalImage(imageUrl) {
     window.open(baseImageAddress + imageUrl, '_blank');
 }
+function getAcceptedTotal(receipt) {
+    let total = receipt.receipts.reduce((sum, re) => {
+        if (re.status == "accepted") {
+            return sum + re.amount;
+        }
+        return sum;
+    }, 0);
+    return Number(total).toLocaleString('fa')
+}
 function acceptReceipt(receipt) {
     Swal.fire({
         title: "تایید رسید",
@@ -167,7 +192,7 @@ function acceptReceipt(receipt) {
             try {
                 await axios.post(`/receipts/${receipt.id}/accept`);
                 getReceipts();
-                Swal.fire("موفق", "مبلغ به کیف پول اضافه شد", "success");
+                Swal.fire("موفق", "رسید با موفقیت تایید شد", "success");
             } catch (err) {
                 Swal.fire("خطا", "مشکلی در تایید پیش آمد", "error");
             }
@@ -257,3 +282,39 @@ onMounted(() => {
     getReceipts();
 });
 </script>
+<style>
+.receipts span {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    padding: 4px 8px;
+    border-radius: 4px;
+    box-shadow: 0 0 5px #1213;
+    color: white;
+}
+
+.receipts div {
+    position: relative;
+    padding: 4px;
+    border-radius: 4px;
+    background: white;
+    margin: 4px 0;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    min-height: 115px;
+}
+
+.receipts span.yellow {
+    background-color: yellow;
+    color: black;
+}
+
+.red {
+    background-color: red;
+}
+
+.green {
+    background-color: green;
+}
+</style>

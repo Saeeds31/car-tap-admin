@@ -55,15 +55,21 @@
                         {{ data.item.user ? data.item.user.full_name : data.item.user.mobile }}
                     </span>
                 </template>
-                
+
                 <template #cell(mobile)="data">
                     <span>
-                        {{ data.item.user ? data.item.user.mobile :"-" }}
+                        {{ data.item.user ? data.item.user.mobile : "-" }}
                     </span>
                 </template>
                 <template #cell(car)="data">
                     <span>
                         {{ data.item.car?.name }}
+                    </span>
+                </template>
+
+                <template #cell(total_accepted_amount)="data">
+                    <span>
+                        {{ Number(data.item?.total_accepted_amount).toLocaleString('fa') }}
                     </span>
                 </template>
 
@@ -85,14 +91,14 @@
                     </span>
                 </template>
                 <template #cell(handler)="data">
-                 <div class="d-flex flex-column gap-2">
-                    <button class="btn btn-primary" @click="changeStatus(data.item)">
-                        تغییر وضعیت
-                    </button>
-                    <button class="mx-3 btn btn-info" @click="changeCar(data.item)">
-                        تغییر خودرو
-                    </button>
-                 </div>
+                    <div class="d-flex flex-column gap-2">
+                        <button class="btn btn-primary" @click="changeStatus(data.item)">
+                            تغییر وضعیت
+                        </button>
+                        <button class="mx-3 btn btn-info" @click="changeCar(data.item)">
+                            تغییر خودرو
+                        </button>
+                    </div>
 
                 </template>
             </b-table>
@@ -239,6 +245,8 @@ const fields = [
     { key: "mobile", label: "شماره تماس" },
     { key: "car", label: "نام ماشین" },
     { key: "salePlan", label: "طرح فروش" },
+    { key: "total_accepted_amount", label: "جمه واریزی به تومان" },
+
     { key: "status", label: "وضعیت" },
     { key: "created_at", label: "تاریخ ثبت" },
     { key: "handler", label: "تغییرات" },

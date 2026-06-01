@@ -82,10 +82,10 @@ const menuItems = [
       { name: "مدیران", link: "/users/managers", permissions: ['manager_view'], icon: "bi-shield-check" },
       { name: "کارفرمایان", link: "/users/employers", permissions: ['employers_view'], icon: "bi-person" },
       { name: "دسترسی شهری", link: "/users/city-permission", permissions: ['citypermission_view'], icon: "bi-building" },
+
     ],
   },
-
-
+  { name: "رسید های واریزی", link: "/receipts", permissions: ['receipts_view'], icon: "bi-receipt" },
 
   {
     name: "محتوا",

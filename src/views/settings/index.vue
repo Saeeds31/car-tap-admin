@@ -32,7 +32,7 @@
                     </div>
                     <b-col v-else-if="setting.type === 'file'" cols="12" md="12">
                         <VueFileAgent @select="fileloaded($event, setting.key)" ref="kos" :maxFiles="1"
-                            accept=".pdf,.jpg,.png" theme="grid" deletable sortable />
+                            accept=".pdf,.jpg,.png,.webp" theme="grid" deletable sortable />
                     </b-col>
 
                     <!-- پیشفرض -->
