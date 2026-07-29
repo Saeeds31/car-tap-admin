@@ -1,6 +1,6 @@
 <template>
   <div class="p-4">
-    <b-card title="ویرایش ماشین جدید">
+    <b-card title="ویرایش ماشین">
       <b-form @submit.prevent="submitForm">
         <b-row>
           <b-col cols="12" md="6">
@@ -16,14 +16,15 @@
               <b-form-invalid-feedback v-if="errors.price">{{ errors.price[0] }}</b-form-invalid-feedback>
             </b-form-group>
           </b-col>
+          
           <b-col cols="12">
             <b-form-group label="تصاویر">
-
               <VueFileAgent @update:rawModelValue="imageDeleted" @select="imagesLoaded"
                 v-model:rawModelValue="oldImages" :multiple="true" accept=".jpg,.png,.pdf" theme="grid" deletable
                 sortable />
             </b-form-group>
           </b-col>
+          
           <b-col v-if="parentOptions.length" cols="12" md="6">
             <b-form-group label="دسته‌بندی " label-for="category_id">
               <Treeselect id="category_id" :multiple="false" v-model="form.category_id" :normalizer="normalizer"
@@ -41,13 +42,15 @@
               }}</b-form-invalid-feedback>
             </b-form-group>
           </b-col>
-          <b-col v-if="selectedGroup" cols="12" md="12">
+          
+          <b-col cols="12" md="12">
             <label>انتخاب گروه مشخصات:</label>
             <Treeselect :valueFormat="'object'" v-model="selectedGroup" :multiple="true" :options="groups"
               :normalizer="normalizer" />
           </b-col>
+          
           <b-col v-if="selectedGroup && selectedGroup.length" cols="12" md="12">
-            <label>انتخاب گروه مشخصات:</label>
+            <label>مشخصات:</label>
             <div>
               <table class="table table-bordered">
                 <thead>
@@ -59,12 +62,13 @@
                   </tr>
                 </thead>
                 <tbody>
-                  <tr v-for="(item, index) in specifications" :key="index">
+                  <tr v-for="(item, index) in specifications" :key="item.id">
                     <td>{{ index + 1 }}</td>
                     <td>{{ item.title }}</td>
                     <td>
                       <select class="form-control" v-model="selectedSpecifications[item.id]['select']">
-                        <option v-for="val in item.values" :key="index" :value="val.id">{{
+                        <option value="">انتخاب کنید</option>
+                        <option v-for="val in item.values" :key="val.id" :value="val.id">{{
                           val.value
                         }}
                         </option>
@@ -81,9 +85,8 @@
 
           <!-- Image -->
           <b-col cols="12" md="12">
-            <b-form-group label="تصویر (URL)">
-
-              <VueFileAgent @select="imageLoaded" @update:rawModelValue="changeMainImage"
+            <b-form-group label="تصویر اصلی">
+              <VueFileAgent @select="imageLoaded" @update:rawModelValue="mainImageDeletedHandler"
                 :raw-model-value="oldMainImage" :maxFiles="1" accept=".jpg,.png" theme="grid" deletable sortable />
               <b-form-invalid-feedback v-if="errors.image">{{ errors.image[0] }}</b-form-invalid-feedback>
             </b-form-group>
@@ -118,217 +121,286 @@ import 'vue3-treeselect/dist/vue3-treeselect.css'
 import { useAdmin } from '@/stores/modules/admin';
 import { watch } from 'vue'
 import { useRoute, useRouter } from "vue-router"
+
 const route = useRoute();
 const router = useRouter();
 const store = useAdmin();
 const checkPermission = store.checkPermission;
+
+const baseImageAddress = 'https://api.tap-car.ir/storage/';
+
 const form = reactive({
   name: '',
   description: '',
   price: "",
-  image: '',
+  image: null, // برای تصویر جدید
   category_id: null,
   brand_id: null,
   images: []
 })
+
 let backupImages = ref([])
 let deleted_images = ref([]);
 let oldImages = ref([])
-let oldMainImage = ref([])
+let oldMainImage = ref(null) // تغییر از [] به null
+let mainImageDeleted = ref(false);
+let car = ref(null);
 
+// تابع حذف تصویر
 function imageDeleted(files) {
-  backupImages.value.forEach(
-    (oldimg, index) => {
-      let finded = files.find((newImg) => newImg.id == oldimg.id);
-      if (!finded) {
-        deleted_images.value.push(oldimg.id);
-        backupImages.value.splice(index, 1)
-      }
+  backupImages.value.forEach((oldimg, index) => {
+    let finded = files.find((newImg) => newImg.id == oldimg.id);
+    if (!finded) {
+      deleted_images.value.push(oldimg.id);
+      backupImages.value.splice(index, 1)
     }
-  );
+  });
 }
+
+// تابع حذف تصویر اصلی
+function mainImageDeletedHandler() {
+  mainImageDeleted.value = true;
+  oldMainImage.value = null;
+}
+
 let loading = ref(false);
-let selectedGroup = ref(null);
+let selectedGroup = ref([]); // تغییر از null به []
+let selectedSpecifications = ref({});
+let specifications = ref([]);
+let groups = ref([]);
+
+// واچ کردن تغییرات گروه‌ها
 watch(() => selectedGroup.value, (newValue) => {
+  // اگر newValue خالی یا null بود، ریست کن
+  if (!newValue || !newValue.length) {
+    specifications.value = [];
+    selectedSpecifications.value = {};
+    return;
+  }
+
   specifications.value = [];
+  const newSpecs = {};
+  
   newValue.forEach((item) => {
-    item.specifications.forEach((sp) => {
-      let select = null;
-      if (firstInitiSpecificationFlag.value) {
-        let findedgroup = oldSpecificationRecivedFromServer.value.find((oldgroup) => oldgroup.group_id == item.id);
-        if (findedgroup) {
-          let findedspecification = findedgroup.items.find((specificationItem) => specificationItem.specification_id == sp.id);
-          if (findedspecification) {
-            select = findedspecification.value_id
+    if (item.specifications && item.specifications.length) {
+      item.specifications.forEach((sp) => {
+        let select = null;
+        // اگر قبلاً مقدار داشته، از oldSpecificationRecivedFromServer بگیر
+        if (firstInitiSpecificationFlag.value) {
+          let findedgroup = oldSpecificationRecivedFromServer.value.find(
+            (oldgroup) => oldgroup.group_id == item.id
+          );
+          if (findedgroup) {
+            let findedspecification = findedgroup.items.find(
+              (specificationItem) => specificationItem.specification_id == sp.id
+            );
+            if (findedspecification) {
+              select = findedspecification.value_id;
+            }
           }
         }
-      }
-      selectedSpecifications.value[sp.id] = {
-        custom: null,
-        select: select
-      };
-    })
-    specifications.value.push(...item.specifications)
-  })
+        newSpecs[sp.id] = {
+          custom: null,
+          select: select
+        };
+      });
+      specifications.value.push(...item.specifications);
+    }
+  });
+  
+  selectedSpecifications.value = newSpecs;
+  
   if (firstInitiSpecificationFlag.value) {
     firstInitiSpecificationFlag.value = false;
   }
-})
+}, { deep: true });
+
 let oldSpecificationRecivedFromServer = ref([])
+let firstInitiSpecificationFlag = ref(false);
+
 function initSpecifications(spegroups) {
   let finalArr = [];
   oldSpecificationRecivedFromServer.value = spegroups;
+  
   spegroups.forEach((spg) => {
     let finded = groups.value.find((gr) => gr.id === spg.group_id);
     if (finded) {
       finalArr.push(finded);
     }
   })
+  
   selectedGroup.value = finalArr;
   firstInitiSpecificationFlag.value = true;
 }
-let firstInitiSpecificationFlag = ref(false);
-let selectedSpecifications = ref({});
-let specifications = ref([]);
-let groups = ref([]);
+
+// تابع بارگذاری تصاویر
 function imagesLoaded(files) {
   form.images = files.map((file) => file.file)
 }
-const errors = reactive({})
-function imageLoaded(files) {
-  form.image = files[0].file
-}
-function changeMainImage() {
-  console.log("are");
 
-  if (!mainImageDeleted.value) {
+const errors = reactive({})
+
+function imageLoaded(files) {
+  if (files && files.length) {
+    form.image = files[0].file;
     mainImageDeleted.value = true;
+    oldMainImage.value = null;
   }
 }
+
 const normalizer = (node) => {
-  // تبدیل کلیدها به فرمت استاندارد کامپوننت
   return {
     id: node.id,
     label: node.title,
   }
 }
+
 const parentOptions = ref([])
 const parentOptionsBrand = ref([])
 
 async function getParentOption() {
-  await axios.get("/categories").then((res) => {
-    parentOptions.value = res.data.data.data
-  })
-  await axios.get("/brands").then((res) => {
-    parentOptionsBrand.value = res.data.data.data
-  })
+  try {
+    const [categoriesRes, brandsRes] = await Promise.all([
+      axios.get("/categories"),
+      axios.get("/brands")
+    ]);
+    parentOptions.value = categoriesRes.data.data.data || [];
+    parentOptionsBrand.value = brandsRes.data.data.data || [];
+  } catch (err) {
+    console.error('Error loading options:', err);
+  }
 }
 
-let mainImageDeleted = ref(false);
-let car = ref(null);
+// تابع ارسال فرم
 const submitForm = async () => {
-
   Object.keys(errors).forEach(key => delete errors[key])
+  
   try {
     loading.value = true;
     const formData = new FormData()
+    
+    // افزودن فیلدهای فرم
     for (const key in form) {
-      console.log(key);
-
       if (key === 'images') {
-        form.images.forEach(imgfile => {
-          formData.append("images[]", imgfile)
-        })
-      } else if (key == "image") {
+        if (form.images && form.images.length) {
+          form.images.forEach(imgfile => {
+            formData.append("images[]", imgfile)
+          })
+        }
+      } else if (key === "image") {
+        // اگر تصویر جدید آپلود شده، اون رو ارسال کن
         if (form.image) {
           formData.append(key, form.image)
-        }
-        else {
-          formData.append(key, car.value.image)
+        } else if (mainImageDeleted.value) {
+          // اگر تصویر اصلی حذف شده، علامت بزن
+          formData.append("delete_main_image", "1")
         }
       } else {
-        formData.append(key, form[key] ?? '')
+        if (form[key] !== null && form[key] !== undefined&& form[key] !='') {
+          formData.append(key, form[key]??'')
+        }
       }
     }
+    
+    // افزودن تصاویر حذف شده
     if (deleted_images.value.length) {
       deleted_images.value.forEach(id => {
         formData.append("deleted_images[]", id)
       })
-    };
+    }
+    
     formData.append("_method", "PUT")
-    for (const key in selectedSpecifications.value) {
-      if (selectedSpecifications.value[key]['custom']) {
-        formData.append(`specification_id[]`, key)
-        formData.append(`specification_value[]`, selectedSpecifications.value[key]['custom'])
-
-      } else if (selectedSpecifications.value[key]['select']) {
-        formData.append(`specification_id[]`, key)
-        formData.append(`specification_value[]`, selectedSpecifications.value[key]['select'])
+    
+    // افزودن مشخصات - استفاده از Object.keys
+    const specKeys = Object.keys(selectedSpecifications.value);
+    for (const key of specKeys) {
+      const spec = selectedSpecifications.value[key];
+      
+      if (spec.select && spec.select !== '') {
+        formData.append('specification_id[]', key)
+        formData.append('specification_value[]', spec.select)
+      } else if (spec.custom && spec.custom.trim() !== '') {
+        formData.append('specification_id[]', key)
+        formData.append('specification_value[]', spec.custom.trim())
       }
     }
+    
     await axios.post(`/cars/${route.params.id}`, formData, {
       headers: { 'Content-Type': 'multipart/form-data' }
-
     })
-    toast.success('ماشین با موفقیت ذخیره شد ✅')
+    
+    toast.success('ماشین با موفقیت ویرایش شد ✅')
     setTimeout(() => {
       router.push('/cars/list')
-
     }, 2000);
+    
   } catch (err) {
     if (err.response && err.response.status === 422) {
       Object.assign(errors, err.response.data.errors)
       toast.error('لطفاً خطاهای فرم را بررسی کنید ❌')
     } else {
+      console.error('Error:', err);
       toast.error('خطا در ارسال اطلاعات ❌')
     }
   } finally {
     loading.value = false;
   }
 }
+
 onMounted(async () => {
   try {
-    await axios.get("/specification-tree").then((res) => {
-      groups.value = res.data.data
-    })
+    // بارگذاری گروه‌های مشخصات
+    const groupsRes = await axios.get("/specification-tree");
+    groups.value = groupsRes.data.data || [];
+    
+    // بارگذاری اطلاعات ماشین
     const res = await axios.get(`/cars/${route.params.id}`);
     car.value = res.data.data.car;
-    initSpecifications(res.data.data.specifications)
-    if (res.data.data.car.image)
-      oldMainImage.value =
-        [{
-          name: res.data.data.car.image?.split('/').pop(),
+    
+    // تنظیم مشخصات
+    initSpecifications(res.data.data.specifications || []);
+    
+    // تنظیم تصویر اصلی
+    if (car.value.image) {
+      oldMainImage.value = [{
+        name: car.value.image?.split('/').pop(),
+        size: 0,
+        type: 'image/jpeg',
+        ext: car.value.image.split('.').pop(),
+        url: `${baseImageAddress}${car.value.image}`,
+      }];
+    }
+    
+    // تنظیم تصاویر
+    if (car.value.images && car.value.images.length) {
+      backupImages.value = car.value.images;
+      
+      let images = [];
+      car.value.images.forEach((img) => {
+        images.push({
+          id: img.id,
+          name: img.path.split('/').pop(),
           size: 0,
           type: 'image/jpeg',
-          ext: res.data.data.car.image.split('.').pop(),
-          url: `${baseImageAddress}${res.data.data.car.image}`,
-        }];
-    if (res.data.data.car.images && res.data.data.car.images.length) {
-      backupImages.value = res.data.data.car.images;
-
-      let images = [];
-      res.data.data.car.images.forEach((img) => {
-        images.push(
-          {
-            id: img.id,
-            name: img.path.split('/').pop(),
-            size: 0,
-            type: 'image/jpeg',
-            ext: img.path.split('.').pop(),
-            url: `${baseImageAddress}${img.path}`,
-          }
-        )
+          ext: img.path.split('.').pop(),
+          url: `${baseImageAddress}${img.path}`,
+        })
       })
       oldImages.value = images;
     }
-    form.name = car.value.name;
-    form.description = car.value.description;
-    form.image = '';
-    form.category_id = car.value.category_id;
-    form.price = car.value.price;
-    form.brand_id = car.value.brand_id;
-    form.images = []
-    getParentOption()
+    
+    // تنظیم فرم
+    form.name = car.value.name || '';
+    form.description = car.value.description || '';
+    form.price = car.value.price || '';
+    form.category_id = car.value.category_id || null;
+    form.brand_id = car.value.brand_id || null;
+    form.image = null;
+    form.images = [];
+    
+    // بارگذاری دسته‌بندی‌ها و برندها
+    await getParentOption();
+    
   } catch (err) {
     console.log(err);
     toast.error('خطا در دریافت اطلاعات ماشین ❌')

@@ -77,19 +77,22 @@ import { ref, onMounted } from "vue";
 import axios from "axios";
 import Swal from "sweetalert2";
 import { useAdmin } from '@/stores/modules/admin';
+import { useRoute, useRouter } from "vue-router"
+const route = useRoute();
+const router = useRouter();
 const store = useAdmin();
 const checkPermission = store.checkPermission;
 const currentPage = ref(1)
 const cars = ref({ data: [], meta: null });
 const loading = ref(false);
 const filters = ref({ title: "" });
-let currentUrl = "/cars";
+let currentUrl = route.query.page ? `/cars?page=${route.query.page}` : "/cars";
 async function getCars(url) {
   loading.value = true;
   try {
     const { data } = await axios.get(url, { params: filters.value });
     cars.value = data;
-    currentPage.value = data.data.current_page
+    currentPage.value = cars.value.current_page
   } catch (err) {
     console.error(err);
   } finally {
@@ -98,6 +101,7 @@ async function getCars(url) {
 };
 
 const changePage = (page) => {
+  router.replace({ name: route.name, query: { page: page } })
   if (page) getCars(`${currentUrl}?page=${page}`);
   else currentUrl = "/cars"
 };
