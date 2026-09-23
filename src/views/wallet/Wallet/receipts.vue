@@ -1,23 +1,23 @@
 <template>
-    <div class="wallets-page">
-        <div class="d-flex justify-content-between align-items-center mb-3">
-            <h4> رسید های واریزی</h4>
+    <div class="wallets-page container mt-3 mt-md-4 px-2 px-md-3">
+        <div class="d-flex flex-column flex-sm-row justify-content-between align-items-stretch align-items-sm-center gap-2 mb-3 header-row">
+            <h4 class="mb-0 page-title">رسید های واریزی</h4>
         </div>
 
         <!-- فیلتر -->
-        <div class="card mb-3">
-            <div class="card-body row">
-                <b-form-group class="col-md-3" label="نام کامل">
-                    <b-form-input v-model="filters.full_name" type="text" placeholder="جستجو بر اساس نام  " />
+        <div class="card mb-3 header-card">
+            <div class="card-body row g-2">
+                <b-form-group class="col-12 col-sm-6 col-md-3" label="نام کامل">
+                    <b-form-input v-model="filters.full_name" type="text" class="search-input" placeholder="جستجو بر اساس نام  " />
                 </b-form-group>
-                <b-form-group class="col-md-3" label="شماره تماس">
-                    <b-form-input v-model="filters.mobile" type="text" placeholder="جستجو بر اساس شماره تماس  " />
+                <b-form-group class="col-12 col-sm-6 col-md-3" label="شماره تماس">
+                    <b-form-input v-model="filters.mobile" type="text" class="search-input" placeholder="جستجو بر اساس شماره تماس  " />
                 </b-form-group>
-                <b-form-group class="col-md-3" label=" مبلغ واریزی">
-                    <b-form-input v-model="filters.amount" type="text" placeholder="جستجو بر اساس  مبلغ واریزی  " />
+                <b-form-group class="col-12 col-sm-6 col-md-3" label=" مبلغ واریزی">
+                    <b-form-input v-model="filters.amount" type="text" class="search-input" placeholder="جستجو بر اساس  مبلغ واریزی  " />
                 </b-form-group>
 
-                <b-form-group class="col-md-3" label=" وضعیت">
+                <b-form-group class="col-12 col-sm-6 col-md-3" label=" وضعیت">
                     <select v-model="filters.status" class="form-select">
                         <option value="">انتخاب کنید</option>
                         <option value="pending">درحال بررسی</option>
@@ -25,72 +25,144 @@
                         <option value="rejected">رد شده</option>
                     </select>
                 </b-form-group>
-                <b-button @click="getReceipts()">
-                    فیلتر سازی
-                </b-button>
+                <div class="col-12 d-flex align-items-end">
+                    <b-button @click="getReceipts()" class="filter-btn">
+                        <i class="bi bi-funnel me-1"></i>
+                        فیلتر سازی
+                    </b-button>
+                </div>
             </div>
         </div>
 
         <!-- جدول -->
         <div class="card">
-            <div class="card-body">
+            <div class="card-body p-2 p-md-3">
                 <div v-if="loading" class="text-center my-5">
                     <div class="spinner-border" role="status"></div>
                     <p class="mt-2">در حال بارگذاری...</p>
                 </div>
 
                 <div class="table-box" v-else>
-                    <table class="table table-bordered table-striped">
-                        <thead>
-                            <tr>
-                                <th>شناسه</th>
-                                <th>کاربر</th>
-                                <th>درخواست خودرو</th>
-                                <th>مبلغ خودرو(دلار)</th>
-                                <th>جمع مبلغ تایید شده (تومان)</th>
-                                <th>عملیات</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr v-for="receipt in receipts.data" :key="receipt.id">
-                                <td>{{ receipt.id }}</td>
-                                <td>{{ receipt.user?.full_name ?? '-' }}</td>
-                                <td>{{ receipt.car?.name ?? '-' }}</td>
-                                <td>{{ receipt.car?.name ?? '-' }}</td>
-                                
-                                <td>{{ Number(receipt.request?.price).toLocaleString("fa") }}</td>
-                                <td>{{ getAcceptedTotal(receipt) }}</td>
-                                <td>
-                                    <div class="receipts">
-                                        <div v-for="value in receipt.receipts" :key="value.id">
-                                            <img width="100" style="cursor: pointer;"
-                                                @click="showOrginalImage(value.image)"
-                                                :src="getReceiptimage(value.image)" alt="">
-                                            <span
-                                                :class="{ 'yellow': value.status == 'pending', 'red': value.status == 'rejected', 'green': value.status == 'accepted' }">{{
-                                                    getStatusLabel(value.status) }}</span>
-                                            <div class="buttons">
-                                                <button v-if="value.status == 'pending'"
-                                                    class="btn btn-sm  btn-success me-2"
-                                                    @click="acceptReceipt(receipt)">
-                                                    تایید
-                                                </button>
-                                                <button v-if="value.status == 'pending'" class="btn btn-sm btn-warning"
-                                                    @click="rejecteReceipt(receipt)">
-                                                    رد
-                                                </button>
+                    <!-- ===== نمایش جدول در دسکتاپ ===== -->
+                    <div class="table-responsive d-none d-md-block">
+                        <table class="table table-bordered table-striped mb-0">
+                            <thead>
+                                <tr>
+                                    <th>شناسه</th>
+                                    <th>کاربر</th>
+                                    <th>درخواست خودرو</th>
+                                    <th>مبلغ خودرو(دلار)</th>
+                                    <th>جمع مبلغ تایید شده (تومان)</th>
+                                    <th>عملیات</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr v-for="receipt in receipts.data" :key="receipt.id">
+                                    <td>{{ receipt.id }}</td>
+                                    <td>{{ receipt.user?.full_name ?? '-' }}</td>
+                                    <td>{{ receipt.car?.name ?? '-' }}</td>
+                                    <td>{{ receipt.car?.name ?? '-' }}</td>
+                                    
+                                    <td>{{ Number(receipt.request?.price).toLocaleString("fa") }}</td>
+                                    <td>{{ getAcceptedTotal(receipt) }}</td>
+                                    <td>
+                                        <div class="receipts">
+                                            <div v-for="value in receipt.receipts" :key="value.id">
+                                                <img width="100" style="cursor: pointer;"
+                                                    @click="showOrginalImage(value.image)"
+                                                    :src="getReceiptimage(value.image)" alt="">
+                                                <span
+                                                    :class="{ 'yellow': value.status == 'pending', 'red': value.status == 'rejected', 'green': value.status == 'accepted' }">{{
+                                                        getStatusLabel(value.status) }}</span>
+                                                <div class="buttons">
+                                                    <button v-if="value.status == 'pending'"
+                                                        class="btn btn-sm  btn-success me-2"
+                                                        @click="acceptReceipt(receipt)">
+                                                        تایید
+                                                    </button>
+                                                    <button v-if="value.status == 'pending'" class="btn btn-sm btn-warning"
+                                                        @click="rejecteReceipt(receipt)">
+                                                        رد
+                                                    </button>
+                                                </div>
                                             </div>
                                         </div>
+                                    </td>
+
+
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- ===== نمایش کارتی در موبایل ===== -->
+                    <div class="d-md-none receipt-cards">
+                        <div
+                            v-for="receipt in receipts.data"
+                            :key="receipt.id"
+                            class="receipt-card"
+                        >
+                            <div class="receipt-card-header">
+                                <div class="receipt-id-badge">#{{ receipt.id }}</div>
+                                <div class="receipt-user">{{ receipt.user?.full_name ?? '-' }}</div>
+                            </div>
+
+                            <div class="receipt-card-body">
+                                <div class="receipt-info-row">
+                                    <i class="bi bi-car-front"></i>
+                                    <span class="info-label">درخواست خودرو:</span>
+                                    <span class="info-value">{{ receipt.car?.name ?? '-' }}</span>
+                                </div>
+                                <div class="receipt-info-row">
+                                    <i class="bi bi-cash-stack"></i>
+                                    <span class="info-label">مبلغ خودرو (دلار):</span>
+                                    <span class="info-value">{{ Number(receipt.request?.price).toLocaleString("fa") }}</span>
+                                </div>
+                                <div class="receipt-info-row">
+                                    <i class="bi bi-currency-exchange"></i>
+                                    <span class="info-label">جمع مبلغ تایید شده:</span>
+                                    <span class="info-value">{{ getAcceptedTotal(receipt) }} تومان</span>
+                                </div>
+                            </div>
+
+                            <div class="receipt-card-images">
+                                <div v-for="value in receipt.receipts" :key="value.id" class="receipt-image-item">
+                                    <img 
+                                        @click="showOrginalImage(value.image)"
+                                        :src="getReceiptimage(value.image)" 
+                                        alt=""
+                                        class="receipt-thumb"
+                                    >
+                                    <span
+                                        :class="{ 'yellow': value.status == 'pending', 'red': value.status == 'rejected', 'green': value.status == 'accepted' }"
+                                        class="receipt-status-badge"
+                                    >
+                                        {{ getStatusLabel(value.status) }}
+                                    </span>
+                                    <div class="receipt-image-actions" v-if="value.status == 'pending'">
+                                        <button class="btn btn-sm btn-success flex-fill" @click="acceptReceipt(receipt)">
+                                            <i class="bi bi-check-lg"></i>
+                                            <span>تایید</span>
+                                        </button>
+                                        <button class="btn btn-sm btn-warning flex-fill" @click="rejecteReceipt(receipt)">
+                                            <i class="bi bi-x-lg"></i>
+                                            <span>رد</span>
+                                        </button>
                                     </div>
-                                </td>
+                                </div>
+                            </div>
+                        </div>
 
+                        <!-- حالت خالی -->
+                        <div v-if="!receipts.data || receipts.data.length === 0" class="text-center py-5 text-muted">
+                            <i class="bi bi-inbox fs-1 d-block mb-2"></i>
+                            <p>رسیدی یافت نشد</p>
+                        </div>
+                    </div>
 
-                            </tr>
-                        </tbody>
-                    </table>
                     <b-pagination v-model="currentPage" :total-rows="receipts.total" v-if="receipts.last_page != 1"
                         :per-page="receipts.per_page" @Update:modelValue="changePage" align="center"
-                        class="mt-3"></b-pagination>
+                        class="mt-3 pagination-responsive"></b-pagination>
 
 
                 </div>
@@ -99,7 +171,7 @@
 
         <!-- Modal -->
         <div class="modal fade" id="walletModal" tabindex="-1" aria-hidden="true" ref="walletModal">
-            <div class="modal-dialog">
+            <div class="modal-dialog modal-dialog-centered">
                 <div class="modal-content">
                     <div class="modal-header">
                         <h5 class="modal-title">{{ modalTitle }}</h5>
@@ -118,9 +190,11 @@
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                            <i class="bi bi-x"></i>
                             انصراف
                         </button>
                         <button type="button" class="btn btn-primary" @click="submitForm">
+                            <i class="bi bi-save2"></i>
                             ثبت
                         </button>
                     </div>
@@ -282,7 +356,58 @@ onMounted(() => {
     getReceipts();
 });
 </script>
-<style>
+
+<style scoped>
+/* ===== هدر صفحه ===== */
+.header-row {
+    padding: 0 4px;
+}
+
+.page-title {
+    font-weight: 700;
+    color: #2d3436;
+    font-size: 1.4rem;
+}
+
+.search-input {
+    border-radius: 10px;
+    padding: 8px 12px;
+    border: 1px solid #e0e0e0;
+    transition: all 0.2s ease;
+}
+
+.search-input:focus {
+    border-color: #6c5ce7;
+    box-shadow: 0 0 0 3px rgba(108, 92, 231, 0.1);
+}
+
+.filter-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    padding: 8px 20px;
+}
+
+/* ===== جدول ===== */
+.table {
+    margin-bottom: 0;
+}
+
+.table thead th {
+    background: #f8f9fa;
+    font-weight: 600;
+    color: #2d3436;
+    white-space: nowrap;
+    font-size: 0.9rem;
+}
+
+.table tbody td {
+    vertical-align: middle;
+    font-size: 0.9rem;
+}
+
+/* ===== receipts (دسکتاپ) ===== */
 .receipts span {
     position: absolute;
     top: 8px;
@@ -316,5 +441,237 @@ onMounted(() => {
 
 .green {
     background-color: green;
+}
+
+/* ===== کارت‌های موبایل ===== */
+.receipt-cards {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.receipt-card {
+    background: #fff;
+    border: 1px solid #e9ecef;
+    border-radius: 12px;
+    padding: 14px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+    transition: all 0.2s ease;
+}
+
+.receipt-card:hover {
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.08);
+    transform: translateY(-2px);
+}
+
+.receipt-card-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid #f0f0f0;
+    margin-bottom: 10px;
+}
+
+.receipt-id-badge {
+    background: linear-gradient(135deg, #6c5ce7, #a29bfe);
+    color: white;
+    font-size: 0.75rem;
+    font-weight: 700;
+    padding: 4px 10px;
+    border-radius: 20px;
+    flex-shrink: 0;
+}
+
+.receipt-user {
+    font-weight: 700;
+    color: #2d3436;
+    font-size: 0.95rem;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    flex: 1;
+    min-width: 0;
+}
+
+.receipt-card-body {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-bottom: 12px;
+}
+
+.receipt-info-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    font-size: 0.85rem;
+}
+
+.receipt-info-row i {
+    color: #6c5ce7;
+    font-size: 0.95rem;
+    width: 18px;
+    text-align: center;
+    flex-shrink: 0;
+    margin-top: 2px;
+}
+
+.info-label {
+    color: #6c757d;
+    flex-shrink: 0;
+}
+
+.info-value {
+    color: #2d3436;
+    font-weight: 600;
+    margin-right: auto;
+    word-break: break-word;
+    text-align: left;
+}
+
+.receipt-card-images {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding-top: 10px;
+    border-top: 1px solid #f0f0f0;
+}
+
+.receipt-image-item {
+    position: relative;
+    padding: 8px;
+    background: #f8f9fa;
+    border-radius: 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.receipt-thumb {
+    width: 100%;
+    max-height: 150px;
+    object-fit: cover;
+    border-radius: 8px;
+    cursor: pointer;
+    border: 1px solid #e9ecef;
+}
+
+.receipt-status-badge {
+    position: absolute;
+    top: 14px;
+    right: 14px;
+    padding: 4px 10px;
+    border-radius: 6px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+    color: white;
+}
+
+.receipt-status-badge.yellow {
+    background-color: #f59e0b;
+    color: #fff;
+}
+
+.receipt-status-badge.red {
+    background-color: #dc2626;
+    color: #fff;
+}
+
+.receipt-status-badge.green {
+    background-color: #16a34a;
+    color: #fff;
+}
+
+.receipt-image-actions {
+    display: flex;
+    gap: 6px;
+    padding-top: 6px;
+}
+
+.receipt-image-actions .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    font-size: 0.75rem;
+    padding: 6px 8px;
+    white-space: nowrap;
+}
+
+.receipt-image-actions .btn span {
+    display: none;
+}
+
+/* ===== Pagination ===== */
+.pagination-responsive {
+    flex-wrap: wrap;
+    justify-content: center;
+}
+
+/* ========================================= */
+/* ===== موبایل (کمتر از 768px) ===== */
+/* ========================================= */
+@media (max-width: 767.98px) {
+    .page-title {
+        font-size: 1.15rem;
+        text-align: center;
+        width: 100%;
+    }
+
+    .search-input {
+        padding: 8px 10px;
+        font-size: 0.9rem;
+    }
+
+    .filter-btn {
+        width: 100%;
+    }
+
+    /* نمایش label دکمه‌ها در موبایل */
+    .receipt-image-actions .btn span {
+        display: inline;
+    }
+}
+
+/* ========================================= */
+/* ===== موبایل کوچک (کمتر از 400px) ===== */
+/* ========================================= */
+@media (max-width: 399.98px) {
+    .page-title {
+        font-size: 1rem;
+    }
+
+    .receipt-card {
+        padding: 12px;
+    }
+
+    .receipt-user {
+        font-size: 0.85rem;
+    }
+
+    .receipt-info-row {
+        font-size: 0.78rem;
+    }
+
+    .receipt-image-actions .btn {
+        font-size: 0.7rem;
+        padding: 5px 6px;
+    }
+
+    .receipt-status-badge {
+        font-size: 0.7rem;
+        padding: 3px 8px;
+    }
+}
+
+/* ========================================= */
+/* ===== دسکتاپ: مخفی کردن کارت‌ها ===== */
+/* ========================================= */
+@media (min-width: 768px) {
+    .receipt-cards {
+        display: none;
+    }
 }
 </style>

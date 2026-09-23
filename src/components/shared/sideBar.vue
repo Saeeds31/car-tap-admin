@@ -8,16 +8,20 @@
     <!-- Sidebar -->
     <div class="sidebar d-flex flex-column" :class="{ 'sidebar-open': mobileOpen }">
       <!-- Logo -->
-      <router-link to="/dashboard" class="text-decoration-none p-3 d-flex justify-content-center border-bottom logo-wrapper">
-        <h2 style="color: white;">تکین آراز پرگاس</h2>
+      <router-link to="/dashboard"
+        class="text-decoration-none p-3 d-flex justify-content-center align-items-center border-bottom logo-wrapper">
+        <div class="logo-inner d-flex flex-column align-items-center">
+          <i class="bi bi-hexagon-fill logo-icon"></i>
+          <h2 class="logo-title">تکین آراز پرگاس</h2>
+        </div>
       </router-link>
 
       <div class="menu-items-wrapper">
         <div v-for="item in menuItems" :key="item.name" class="w-100">
-          <b-nav-item v-if="!item.children && checkPermission(item.permissions)" :to="item.link" class="menu-item"
-            :class="{ 'active': isActiveRoute(item.link) }">
+          <b-nav-item @click="mobileOpen = false" v-if="!item.children && checkPermission(item.permissions)"
+            :to="item.link" class="menu-item" :class="{ 'active': isActiveRoute(item.link) }">
             <i :class="item.icon + ' me-2'"></i>
-            <span v-if="mobileOpen || windowWidth < 992">{{ item.name }}</span>
+            <span>{{ item.name }}</span>
           </b-nav-item>
 
           <!-- آیتم با زیرمنو -->
@@ -25,16 +29,16 @@
             <button class="navItem btn w-100 text-start menu-group-btn"
               :class="{ 'has-active-child': hasActiveChild(item) }" @click="toggleSubmenu(item)">
               <i :class="item.icon + ' me-2'"></i>
-              <span v-if="mobileOpen || windowWidth < 992">{{ item.name }}</span>
+              <span>{{ item.name }}</span>
               <i class="ms-auto bi" :class="openSubmenuStates[item.name] ? 'bi-chevron-up' : 'bi-chevron-down'"></i>
             </button>
             <b-collapse v-model="openSubmenuStates[item.name]" class="submenu-wrapper">
               <b-nav vertical>
                 <template v-for="child in item.children" :key="child.name">
-                  <b-nav-item v-if="checkPermission(child.permissions)" :to="child.link" class="submenu-item"
-                    :class="{ 'active': isActiveRoute(child.link) }">
+                  <b-nav-item @click="mobileOpen = false" v-if="checkPermission(child.permissions)" :to="child.link"
+                    class="submenu-item" :class="{ 'active': isActiveRoute(child.link) }">
                     <i :class="child.icon + ' me-2'"></i>
-                    <span v-if="mobileOpen || windowWidth < 992">{{ child.name }}</span>
+                    <span>{{ child.name }}</span>
                   </b-nav-item>
                 </template>
               </b-nav>
@@ -244,7 +248,7 @@ onBeforeUnmount(() => window.removeEventListener("resize", updateWidth));
 </script>
 
 <style scoped>
-/* استایل اصلی سایدبار - تمیز و حرفه‌ای */
+/* ===== استایل اصلی سایدبار ===== */
 .sidebar {
   width: 260px;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
@@ -255,76 +259,120 @@ onBeforeUnmount(() => window.removeEventListener("resize", updateWidth));
   right: 0;
   top: 0;
   z-index: 1000;
-  background: #1a1f2e;
+  background: linear-gradient(180deg, #1a1f2e 0%, #161a26 100%);
   color: #e4e6eb;
-  box-shadow: -2px 0 8px rgba(0, 0, 0, 0.05);
+  box-shadow: -2px 0 12px rgba(0, 0, 0, 0.08);
+  font-family: 'IRANSans', 'Vazir', 'Segoe UI', Tahoma, sans-serif;
 }
 
 /* اسکرول بار سفارشی */
 .sidebar::-webkit-scrollbar {
-  width: 4px;
+  width: 5px;
 }
 
 .sidebar::-webkit-scrollbar-track {
-  background: #2d3348;
+  background: transparent;
 }
 
 .sidebar::-webkit-scrollbar-thumb {
-  background: #4a5568;
+  background: #3b4254;
   border-radius: 4px;
 }
 
 .sidebar::-webkit-scrollbar-thumb:hover {
-  background: #5a6578;
+  background: #4a5568;
 }
 
-/* لوگو */
+/* ===== لوگو ===== */
 .logo-wrapper {
   border-bottom: 1px solid #2d3348 !important;
-  padding: 1.25rem !important;
-  background: #1a1f2e;
+  padding: 1.5rem 1.25rem !important;
+  background: rgba(26, 31, 46, 0.6);
+  transition: background 0.2s ease;
 }
 
-.logo-wrapper img {
-  max-height: 40px;
+.logo-wrapper:hover {
+  background: rgba(45, 51, 72, 0.5);
 }
 
-/* محتوای منوها */
+.logo-inner {
+  gap: 8px;
+}
+
+.logo-icon {
+  font-size: 2rem;
+  background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  filter: drop-shadow(0 2px 6px rgba(59, 130, 246, 0.4));
+}
+
+.logo-title {
+  color: #ffffff;
+  font-size: 1.1rem;
+  font-weight: 700;
+  margin: 0;
+  letter-spacing: 0.3px;
+  text-align: center;
+}
+
+/* ===== محتوای منوها ===== */
 .menu-items-wrapper {
-  padding: 0.75rem 0;
+  padding: 0.75rem 0 1.5rem;
+  flex: 1;
 }
 
-/* آیتم منوی اصلی */
+/* ===== آیتم منوی اصلی ===== */
 .menu-item {
   display: flex !important;
   align-items: center !important;
-  padding: 0.625rem 1.25rem !important;
+  padding: 0.7rem 1.25rem !important;
   margin: 0.25rem 0.75rem !important;
   border-radius: 10px !important;
-  color: #cfd8e3 !important;
+  color: #b8c1d1 !important;
   transition: all 0.2s ease !important;
   cursor: pointer !important;
   font-size: 0.875rem !important;
   font-weight: 500 !important;
+  position: relative;
 }
 
 .menu-item:hover {
-  background: #2d3348 !important;
+  background: rgba(45, 51, 72, 0.8) !important;
   color: #ffffff !important;
+  transform: translateX(-3px);
 }
 
 .menu-item.active {
   background: linear-gradient(135deg, #3b82f6, #2563eb) !important;
   color: white !important;
-  box-shadow: 0 2px 6px rgba(59, 130, 246, 0.3);
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.35);
+}
+
+.menu-item.active::before {
+  content: '';
+  position: absolute;
+  right: -0.75rem;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 4px;
+  height: 24px;
+  background: #60a5fa;
+  border-radius: 4px 0 0 4px;
 }
 
 .menu-item i {
-  font-size: 1.125rem;
+  font-size: 1.15rem;
   width: 1.5rem;
+  transition: transform 0.2s ease;
 }
 
-/* گروه منو با زیرمنو */
+.menu-item:hover i {
+  transform: scale(1.08);
+}
+
+/* ===== گروه منو با زیرمنو ===== */
 .menu-group {
   margin: 0.25rem 0;
 }
@@ -332,11 +380,11 @@ onBeforeUnmount(() => window.removeEventListener("resize", updateWidth));
 .menu-group-btn {
   display: flex !important;
   align-items: center !important;
-  padding: 0.625rem 1.25rem !important;
+  padding: 0.7rem 1.25rem !important;
   margin: 0.25rem 0.75rem !important;
   border-radius: 10px !important;
   background: transparent !important;
-  color: #cfd8e3 !important;
+  color: #b8c1d1 !important;
   border: none !important;
   transition: all 0.2s ease !important;
   cursor: pointer !important;
@@ -345,77 +393,115 @@ onBeforeUnmount(() => window.removeEventListener("resize", updateWidth));
 }
 
 .menu-group-btn:hover {
-  background: #2d3348 !important;
+  background: rgba(45, 51, 72, 0.8) !important;
   color: #ffffff !important;
+  transform: translateX(-3px);
 }
 
 .menu-group-btn.has-active-child {
   background: rgba(59, 130, 246, 0.15) !important;
-  color: #3b82f6 !important;
+  color: #60a5fa !important;
 }
 
 .menu-group-btn i:first-child {
-  font-size: 1.125rem;
+  font-size: 1.15rem;
   width: 1.5rem;
+  transition: transform 0.2s ease;
+}
+
+.menu-group-btn:hover i:first-child {
+  transform: scale(1.08);
 }
 
 .menu-group-btn .bi-chevron-up,
 .menu-group-btn .bi-chevron-down {
   font-size: 0.75rem;
-  transition: transform 0.2s ease;
+  transition: transform 0.25s ease;
 }
 
-/* زیرمنو */
+/* ===== زیرمنو ===== */
 .submenu-wrapper {
   margin-right: 0.5rem;
+  position: relative;
+}
+
+.submenu-wrapper::before {
+  content: '';
+  position: absolute;
+  right: 1.5rem;
+  top: 0;
+  bottom: 0;
+  width: 1px;
+  background: rgba(59, 130, 246, 0.2);
 }
 
 .submenu-item {
   display: flex !important;
   align-items: center !important;
-  padding: 0.5rem 1.25rem 0.5rem 1rem !important;
+  padding: 0.55rem 1.25rem 0.55rem 1rem !important;
   margin: 0.125rem 0.75rem !important;
   border-radius: 8px !important;
   color: #858d9d !important;
   font-size: 0.8125rem !important;
   transition: all 0.2s ease !important;
   cursor: pointer !important;
+  position: relative;
 }
 
 .submenu-item:hover {
-  background: #2d3348 !important;
+  background: rgba(45, 51, 72, 0.6) !important;
   color: #e4e6eb !important;
+  transform: translateX(-3px);
 }
 
 .submenu-item.active {
   background: rgba(59, 130, 246, 0.2) !important;
-  color: #3b82f6 !important;
-  border-right: 2px solid #3b82f6;
+  color: #60a5fa !important;
+}
+
+.submenu-item.active::before {
+  content: '';
+  position: absolute;
+  right: -0.75rem;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 3px;
+  height: 18px;
+  background: #60a5fa;
+  border-radius: 3px 0 0 3px;
 }
 
 .submenu-item i {
-  font-size: 0.875rem;
+  font-size: 0.9rem;
   width: 1.25rem;
+  transition: transform 0.2s ease;
 }
 
-/* دکمه موبایل */
+.submenu-item:hover i {
+  transform: scale(1.1);
+}
+
+/* ===== دکمه موبایل ===== */
 .mobile-toggle-btn {
   position: fixed;
   top: 1rem;
   right: 1rem;
   z-index: 1100;
-  border-radius: 8px;
+  border-radius: 10px;
   padding: 0.5rem 0.75rem;
-  background: #1a1f2e;
+  background: linear-gradient(135deg, #3b82f6, #2563eb);
   border: none;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
+  transition: all 0.2s ease;
 }
 
 .mobile-toggle-btn:hover {
-  background: #2d3348;
+  background: linear-gradient(135deg, #2563eb, #1d4ed8);
+  transform: scale(1.05);
+  box-shadow: 0 6px 16px rgba(59, 130, 246, 0.5);
 }
 
-/* ریسپانسیو */
+/* ===== ریسپانسیو ===== */
 @media (max-width: 991px) {
   .sidebar {
     position: fixed;
@@ -429,7 +515,7 @@ onBeforeUnmount(() => window.removeEventListener("resize", updateWidth));
 
   .sidebar-open {
     transform: translateX(0);
-    box-shadow: -4px 0 20px rgba(0, 0, 0, 0.3);
+    box-shadow: -4px 0 24px rgba(0, 0, 0, 0.4);
   }
 }
 
@@ -446,10 +532,77 @@ onBeforeUnmount(() => window.removeEventListener("resize", updateWidth));
 
 a.nav-link i,
 a.nav-link span {
-  color: #cfd8e3 !important;
+  color: #b8c1d1 !important;
 }
 
 a.nav-link {
-  color: #cfd8e3 !important;
+  color: #b8c1d1 !important;
+}
+
+a.nav-link:hover,
+a.nav-link:hover i,
+a.nav-link:hover span {
+  color: #ffffff !important;
+}
+
+/* ===== بهبودهای ریسپانسیو اضافه شده ===== */
+@media (max-width: 991.98px) {
+
+  /* اطمینان از تمام عرض بودن منوها در موبایل */
+  .menu-items-wrapper {
+    padding: 0.5rem 0 1rem;
+  }
+
+  .menu-item,
+  .menu-group-btn {
+    padding: 0.8rem 1rem !important;
+    margin: 0.25rem 0.5rem !important;
+    font-size: 0.9375rem !important;
+  }
+
+  .submenu-item {
+    padding: 0.65rem 1rem 0.65rem 0.75rem !important;
+    margin: 0.125rem 0.5rem !important;
+    font-size: 0.875rem !important;
+  }
+
+  /* دکمه موبایل کمی بزرگ‌تر و خواناتر */
+  .mobile-toggle-btn {
+    padding: 0.625rem 0.875rem;
+    font-size: 1.125rem;
+  }
+}
+
+/* در صفحات بسیار کوچک، سایدبار کمی باریک‌تر */
+@media (max-width: 400px) {
+  .sidebar {
+    width: 250px;
+  }
+
+  .menu-item,
+  .menu-group-btn {
+    padding: 0.7rem 0.875rem !important;
+    font-size: 0.875rem !important;
+  }
+
+  .submenu-item {
+    padding: 0.55rem 0.875rem 0.55rem 0.625rem !important;
+    font-size: 0.8125rem !important;
+  }
+
+  .logo-title {
+    font-size: 0.95rem;
+  }
+
+  .logo-icon {
+    font-size: 1.7rem;
+  }
+}
+
+/* وقتی سایدبار در دسکتاپ جمع می‌شود (در صورت نیاز) */
+@media (min-width: 992px) {
+  .mobile-toggle-btn {
+    display: none !important;
+  }
 }
 </style>

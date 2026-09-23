@@ -1,48 +1,98 @@
 <template>
-  <div class="container mt-4 sliders">
-
-
+  <div class="container mt-3 mt-md-4 px-2 px-md-3 sliders">
 
     <!-- افزودن -->
-    <div class="d-flex justify-content-end mb-3">
-      <router-link v-if="checkPermission(['slider_store'])" to="/content/sliders/create" class="btn btn-success">
-        افزودن اسلایدر
+    <div class="d-flex justify-content-stretch justify-content-sm-end mb-3">
+      <router-link v-if="checkPermission(['slider_store'])" to="/content/sliders/create" class="btn btn-success add-btn w-100 w-sm-auto">
+        <i class="bi bi-plus"></i>
+        <span>افزودن اسلایدر</span>
       </router-link>
     </div>
 
     <!-- جدول -->
     <div class="card">
-      <div class="card-body table-responsive">
+      <div class="card-body p-2 p-md-3">
         <div v-if="loading" class="text-center p-4">
           <div class="spinner-border text-primary"></div>
         </div>
 
-        <table v-else class="table table-bordered table-hover">
-          <thead>
-            <tr>
-              <th>عنوان</th>
-              <th>نوع</th>
-              <th>تصویر</th>
-              <th>عملیات</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr v-for="slider in sliders" :key="slider.id">
-              <td>{{ slider.title }}</td>
-              <td>{{ slider.type == "desktop" ? "دسکتاپ" : "موبایل" }}</td>
-              <td>
-                <img v-if="slider.image" :src="slider.image" alt="" class="img-thumbnail" style="max-width:100px;">
-              </td>
-              <td>
-                <router-link v-if="checkPermission(['slider_update'])" :to="`/content/sliders/${slider.id}/edit`"
-                  class="btn btn-sm btn-primary me-2">ویرایش</router-link>
-                <button v-if="checkPermission(['slider_delete'])" @click="deleteSlider(slider.id)"
-                  class="btn btn-sm btn-danger">حذف</button>
-              </td>
-            </tr>
-          </tbody>
-        </table>
+        <div v-else>
+          <!-- ===== نمایش جدول در دسکتاپ ===== -->
+          <div class="table-responsive d-none d-md-block">
+            <table class="table table-bordered table-hover mb-0">
+              <thead>
+                <tr>
+                  <th>عنوان</th>
+                  <th>نوع</th>
+                  <th>تصویر</th>
+                  <th>عملیات</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr v-for="slider in sliders" :key="slider.id">
+                  <td>{{ slider.title }}</td>
+                  <td>{{ slider.type == "desktop" ? "دسکتاپ" : "موبایل" }}</td>
+                  <td>
+                    <img v-if="slider.image" :src="slider.image" alt="" class="img-thumbnail" style="max-width:100px;">
+                  </td>
+                  <td>
+                    <div class="d-flex flex-wrap gap-1">
+                      <router-link v-if="checkPermission(['slider_update'])" :to="`/content/sliders/${slider.id}/edit`"
+                        class="btn btn-sm btn-primary">
+                        <i class="bi bi-pen"></i>
+                        <span>ویرایش</span>
+                      </router-link>
+                      <button v-if="checkPermission(['slider_delete'])" @click="deleteSlider(slider.id)"
+                        class="btn btn-sm btn-danger">
+                        <i class="bi bi-trash3-fill"></i>
+                        <span>حذف</span>
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
 
+          <!-- ===== نمایش کارتی در موبایل ===== -->
+          <div class="d-md-none slider-cards">
+            <div
+              v-for="slider in sliders"
+              :key="slider.id"
+              class="slider-card"
+            >
+              <div class="slider-card-header">
+                <div class="slider-title">{{ slider.title }}</div>
+                <span class="badge" :class="slider.type == 'desktop' ? 'bg-primary' : 'bg-info'">
+                  {{ slider.type == "desktop" ? "دسکتاپ" : "موبایل" }}
+                </span>
+              </div>
+
+              <div class="slider-card-body" v-if="slider.image">
+                <img :src="slider.image" alt="" class="slider-image">
+              </div>
+
+              <div class="slider-card-actions">
+                <router-link v-if="checkPermission(['slider_update'])" :to="`/content/sliders/${slider.id}/edit`"
+                  class="btn btn-sm btn-primary flex-fill">
+                  <i class="bi bi-pen"></i>
+                  <span>ویرایش</span>
+                </router-link>
+                <button v-if="checkPermission(['slider_delete'])" @click="deleteSlider(slider.id)"
+                  class="btn btn-sm btn-danger flex-fill">
+                  <i class="bi bi-trash3-fill"></i>
+                  <span>حذف</span>
+                </button>
+              </div>
+            </div>
+
+            <!-- حالت خالی -->
+            <div v-if="!sliders || sliders.length === 0" class="text-center py-5 text-muted">
+              <i class="bi bi-inbox fs-1 d-block mb-2"></i>
+              <p>اسلایدری یافت نشد</p>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   </div>
@@ -93,3 +143,155 @@ onMounted(() => {
   fetchData();
 });
 </script>
+
+<style scoped>
+/* ===== دکمه افزودن ===== */
+.add-btn {
+  white-space: nowrap;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  justify-content: center;
+}
+
+/* ===== جدول ===== */
+.table {
+  margin-bottom: 0;
+}
+
+.table thead th {
+  background: #f8f9fa;
+  font-weight: 600;
+  color: #2d3436;
+  white-space: nowrap;
+  font-size: 0.9rem;
+}
+
+.table tbody td {
+  vertical-align: middle;
+  font-size: 0.9rem;
+}
+
+.badge {
+  font-size: 0.75rem;
+  padding: 0.35rem 0.65rem;
+}
+
+/* ===== کارت‌های موبایل ===== */
+.slider-cards {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.slider-card {
+  background: #fff;
+  border: 1px solid #e9ecef;
+  border-radius: 12px;
+  padding: 14px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+  transition: all 0.2s ease;
+}
+
+.slider-card:hover {
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.08);
+  transform: translateY(-2px);
+}
+
+.slider-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid #f0f0f0;
+  margin-bottom: 10px;
+}
+
+.slider-title {
+  font-weight: 700;
+  color: #2d3436;
+  font-size: 1rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  flex: 1;
+  min-width: 0;
+}
+
+.slider-card-body {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 12px;
+}
+
+.slider-image {
+  max-width: 100%;
+  max-height: 150px;
+  border-radius: 8px;
+  border: 1px solid #e9ecef;
+  object-fit: cover;
+}
+
+.slider-card-actions {
+  display: flex;
+  gap: 6px;
+  padding-top: 10px;
+  border-top: 1px solid #f0f0f0;
+}
+
+.slider-card-actions .btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  font-size: 0.75rem;
+  padding: 6px 8px;
+  white-space: nowrap;
+}
+
+.slider-card-actions .btn span {
+  display: none;
+}
+
+/* ========================================= */
+/* ===== موبایل (کمتر از 768px) ===== */
+/* ========================================= */
+@media (max-width: 767.98px) {
+  /* نمایش label دکمه‌ها در موبایل */
+  .slider-card-actions .btn span {
+    display: inline;
+  }
+}
+
+/* ========================================= */
+/* ===== موبایل کوچک (کمتر از 400px) ===== */
+/* ========================================= */
+@media (max-width: 399.98px) {
+  .slider-card {
+    padding: 12px;
+  }
+
+  .slider-title {
+    font-size: 0.9rem;
+  }
+
+  .slider-card-actions .btn {
+    font-size: 0.7rem;
+    padding: 5px 6px;
+  }
+
+  .slider-image {
+    max-height: 120px;
+  }
+}
+
+/* ========================================= */
+/* ===== دسکتاپ: مخفی کردن کارت‌ها ===== */
+/* ========================================= */
+@media (min-width: 768px) {
+  .slider-cards {
+    display: none;
+  }
+}
+</style>

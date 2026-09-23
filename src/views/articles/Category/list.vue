@@ -1,32 +1,93 @@
 <template>
-    <div class="container mt-4">
-        <div class="d-flex justify-content-between mb-3">
-            <h3>لیست دسته بندی ها</h3>
+    <div class="container mt-3 mt-md-4 px-2 px-md-3">
+        <div class="d-flex flex-column flex-sm-row justify-content-between align-items-stretch align-items-sm-center gap-2 mb-3 header-row">
+            <h3 class="mb-0 page-title">لیست دسته بندی ها</h3>
             <router-link v-if="checkPermission(['articlecategory_store'])" to="/articles/categories/create"
-                class="btn btn-primary">
-                افزودن دسته بندی
+                class="btn btn-primary add-btn">
+                <i class="bi bi-plus"></i>
+                <span>افزودن دسته بندی</span>
             </router-link>
         </div>
 
-        <b-table striped hover :items="categories.data" :fields="fields">
-            <template #cell(parent)="data">
-                {{ data.item.parent ? data.item.parent.title : '-' }}
-            </template>
+        <!-- ===== نمایش جدول در دسکتاپ ===== -->
+        <div class="card d-none d-md-block">
+            <div class="card-body p-2 p-md-3">
+                <b-table class="table table-striped table-hover mb-0" striped hover :items="categories.data" :fields="fields">
+                    <template #cell(parent)="data">
+                        {{ data.item.parent ? data.item.parent.title : '-' }}
+                    </template>
 
-            <template #cell(actions)="data">
-                <router-link v-if="checkPermission(['articlecategory_update'])"
-                    :to="`/articles/categories/${data.item.id}/edit`" class="btn btn-sm btn-warning me-2">
-                    ویرایش </router-link>
-                <button v-if="checkPermission(['articlecategory_delete'])" class="btn btn-sm btn-danger"
-                    @click="confirmDelete(data.item.id)">
-                    حذف
-                </button>
-            </template>
-        </b-table>
+                    <template #cell(actions)="data">
+                        <div class="d-flex flex-wrap gap-1">
+                            <router-link v-if="checkPermission(['articlecategory_update'])"
+                                :to="`/articles/categories/${data.item.id}/edit`" class="btn btn-sm btn-warning">
+                                <i class="bi bi-pen"></i>
+                                <span>ویرایش</span>
+                            </router-link>
+                            <button v-if="checkPermission(['articlecategory_delete'])" class="btn btn-sm btn-danger"
+                                @click="confirmDelete(data.item.id)">
+                                <i class="bi bi-trash3-fill"></i>
+                                <span>حذف</span>
+                            </button>
+                        </div>
+                    </template>
+                </b-table>
+            </div>
+        </div>
+
+        <!-- ===== نمایش کارتی در موبایل ===== -->
+        <div class="card d-md-none">
+            <div class="card-body p-2">
+                <div class="article-category-cards">
+                    <div
+                        v-for="cat in categories.data"
+                        :key="cat.id"
+                        class="article-category-card"
+                    >
+                        <div class="article-category-card-header">
+                            <div class="article-category-id-badge">#{{ cat.id }}</div>
+                            <div class="article-category-title">{{ cat.title }}</div>
+                        </div>
+
+                        <div class="article-category-card-body">
+                            <div class="article-category-info-row">
+                                <i class="bi bi-link-45deg"></i>
+                                <span class="info-label">اسلاگ:</span>
+                                <span class="info-value">{{ cat.slug }}</span>
+                            </div>
+                            <div class="article-category-info-row">
+                                <i class="bi bi-diagram-3"></i>
+                                <span class="info-label">والد:</span>
+                                <span class="info-value">{{ cat.parent ? cat.parent.title : '-' }}</span>
+                            </div>
+                        </div>
+
+                        <div class="article-category-card-actions">
+                            <router-link v-if="checkPermission(['articlecategory_update'])"
+                                :to="`/articles/categories/${cat.id}/edit`" class="btn btn-sm btn-warning flex-fill">
+                                <i class="bi bi-pen"></i>
+                                <span>ویرایش</span>
+                            </router-link>
+                            <button v-if="checkPermission(['articlecategory_delete'])" class="btn btn-sm btn-danger flex-fill"
+                                @click="confirmDelete(cat.id)">
+                                <i class="bi bi-trash3-fill"></i>
+                                <span>حذف</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- حالت خالی -->
+                    <div v-if="!categories.data || categories.data.length === 0" class="text-center py-5 text-muted">
+                        <i class="bi bi-inbox fs-1 d-block mb-2"></i>
+                        <p>دسته‌بندی‌ای یافت نشد</p>
+                    </div>
+                </div>
+            </div>
+        </div>
 
         <b-pagination v-model="currentPage" :total-rows="categories.total" v-if="categories.last_page != 1"
-            :per-page="categories.per_page" @Update:modelValue="fetchCategories" align="center"
-            class="mt-3"></b-pagination>
+            :per-page="categories.per_page" @Update:ModelValue="fetchCategories" align="center"
+            class="mt-3 pagination-responsive"></b-pagination>
     </div>
 </template>
 
@@ -102,3 +163,209 @@ onMounted(() => {
 
 
 </script>
+
+<style scoped>
+/* ===== هدر صفحه ===== */
+.header-row {
+    padding: 0 4px;
+}
+
+.page-title {
+    font-weight: 700;
+    color: #2d3436;
+    font-size: 1.5rem;
+}
+
+.add-btn {
+    white-space: nowrap;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    justify-content: center;
+}
+
+/* ===== جدول ===== */
+.table {
+    margin-bottom: 0;
+}
+
+.table thead th {
+    background: #f8f9fa;
+    font-weight: 600;
+    color: #2d3436;
+    white-space: nowrap;
+    font-size: 0.9rem;
+}
+
+.table tbody td {
+    vertical-align: middle;
+    font-size: 0.9rem;
+}
+
+/* ===== کارت‌های موبایل ===== */
+.article-category-cards {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.article-category-card {
+    background: #fff;
+    border: 1px solid #e9ecef;
+    border-radius: 12px;
+    padding: 14px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+    transition: all 0.2s ease;
+}
+
+.article-category-card:hover {
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.08);
+    transform: translateY(-2px);
+}
+
+.article-category-card-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid #f0f0f0;
+    margin-bottom: 10px;
+}
+
+.article-category-id-badge {
+    background: linear-gradient(135deg, #6c5ce7, #a29bfe);
+    color: white;
+    font-size: 0.75rem;
+    font-weight: 700;
+    padding: 4px 10px;
+    border-radius: 20px;
+    flex-shrink: 0;
+}
+
+.article-category-title {
+    font-weight: 700;
+    color: #2d3436;
+    font-size: 1rem;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.article-category-card-body {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-bottom: 12px;
+}
+
+.article-category-info-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.85rem;
+}
+
+.article-category-info-row i {
+    color: #6c5ce7;
+    font-size: 0.95rem;
+    width: 18px;
+    text-align: center;
+    flex-shrink: 0;
+}
+
+.info-label {
+    color: #6c757d;
+    flex-shrink: 0;
+}
+
+.info-value {
+    color: #2d3436;
+    font-weight: 600;
+    margin-right: auto;
+    word-break: break-word;
+    text-align: left;
+    direction: ltr;
+}
+
+.article-category-card-actions {
+    display: flex;
+    gap: 6px;
+    padding-top: 10px;
+    border-top: 1px solid #f0f0f0;
+}
+
+.article-category-card-actions .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    font-size: 0.75rem;
+    padding: 6px 8px;
+    white-space: nowrap;
+}
+
+.article-category-card-actions .btn span {
+    display: none;
+}
+
+/* ===== Pagination ===== */
+.pagination-responsive {
+    flex-wrap: wrap;
+    justify-content: center;
+}
+
+/* ========================================= */
+/* ===== موبایل (کمتر از 768px) ===== */
+/* ========================================= */
+@media (max-width: 767.98px) {
+    .page-title {
+        font-size: 1.15rem;
+        text-align: center;
+        width: 100%;
+    }
+
+    .add-btn {
+        width: 100%;
+    }
+
+    /* نمایش label دکمه‌ها در موبایل */
+    .article-category-card-actions .btn span {
+        display: inline;
+    }
+}
+
+/* ========================================= */
+/* ===== موبایل کوچک (کمتر از 400px) ===== */
+/* ========================================= */
+@media (max-width: 399.98px) {
+    .page-title {
+        font-size: 1rem;
+    }
+
+    .article-category-card {
+        padding: 12px;
+    }
+
+    .article-category-title {
+        font-size: 0.9rem;
+    }
+
+    .article-category-info-row {
+        font-size: 0.78rem;
+    }
+
+    .article-category-card-actions .btn {
+        font-size: 0.7rem;
+        padding: 5px 6px;
+    }
+}
+
+/* ========================================= */
+/* ===== دسکتاپ: مخفی کردن کارت‌ها ===== */
+/* ========================================= */
+@media (min-width: 768px) {
+    .article-category-cards {
+        display: none;
+    }
+}
+</style>
