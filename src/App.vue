@@ -90,7 +90,7 @@ div#mainContent {
   display: flex;
   flex-direction: column;
   min-height: 100vh;
-  margin-right: 250px;
+  margin-right: 262px;
 }
 
 @media (max-width:991px) {
